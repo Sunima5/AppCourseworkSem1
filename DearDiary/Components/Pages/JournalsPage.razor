@@ -1,0 +1,47 @@
+﻿@page "/journals"
+@inject JournalService JournalService
+@inject NavigationManager Nav
+
+<h3>📖 All Journals</h3>
+
+<div class="journals-grid">
+@foreach (var j in Journals)
+{
+    <div class="journal-box">
+        <h5>@j.Title</h5>
+        <p class="muted">@j.EntryDate.ToString("dd MMM yyyy")</p>
+
+        <p class="preview">
+            @(j.Content.Length > 120 ? j.Content[..120] + "..." : j.Content)
+        </p>
+
+        <div class="actions">
+            <button class="btn btn-sm btn-outline-primary"
+                    @onclick="() => Edit(j.EntryDate)">Edit</button>
+
+            <button class="btn btn-sm btn-outline-danger"
+                    @onclick="() => Delete(j.EntryDate)">Delete</button>
+        </div>
+    </div>
+}
+</div>
+
+@code {
+    List<Journal> Journals = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Journals = (await JournalService.GetAllAsync())
+            .OrderByDescending(j => j.EntryDate)
+            .ToList();
+    }
+
+    void Edit(DateTime date)
+        => Nav.NavigateTo($"/add?date={date:yyyy-MM-dd}");
+
+    async Task Delete(DateTime date)
+    {
+        await JournalService.DeleteAsync(date);
+        Journals = await JournalService.GetAllAsync();
+    }
+}

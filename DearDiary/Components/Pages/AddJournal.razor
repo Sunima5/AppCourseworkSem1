@@ -1,0 +1,210 @@
+﻿@page "/add"
+@inject JournalService JournalService
+@inject NavigationManager NavigationManager
+
+<h3>Add / Edit Journal</h3>
+
+@if (ShowAlreadyDoneScreen)
+{
+    <div class="card p-4">
+        <h5>Journal for today is already done ✅</h5>
+
+        <div class="mt-3">
+            <button class="btn btn-dark me-2" @onclick="EditToday">
+                Edit Today’s Journal
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="GoBack">
+                OK
+            </button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card p-4">
+
+        <!-- TITLE -->
+        <input class="form-control mb-3"
+               placeholder="Journal title"
+               @bind="Entry.Title" />
+
+        <!-- CONTENT -->
+        <textarea class="form-control mb-4"
+                  rows="8"
+                  placeholder="Write your journal here..."
+                  @bind="Entry.Content">
+        </textarea>
+
+        <!-- PRIMARY MOOD -->
+        <h6>Primary Mood (required)</h6>
+        @foreach (var mood in AllMoods)
+        {
+            <label class="me-3">
+                <input type="radio"
+                       name="primaryMood"
+                       checked="@(Entry.PrimaryMood == mood)"
+                       @onchange="() => Entry.PrimaryMood = mood" />
+                @mood
+            </label>
+        }
+
+        <!-- SECONDARY MOODS -->
+        <h6 class="mt-3">Secondary Moods (choose up to 2)</h6>
+
+        @foreach (var mood in AllMoods)
+        {
+            bool checkedNow = SelectedSecondaryMoods.Contains(mood);
+            bool disabled = !checkedNow && SelectedSecondaryMoods.Count >= 2;
+
+            <div>
+                <input type="checkbox"
+                       checked="@checkedNow"
+                       disabled="@disabled"
+                       @onchange="() => ToggleSecondaryMood(mood)" />
+                @mood
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(SecondaryMoodWarning))
+        {
+            <p class="text-danger">@SecondaryMoodWarning</p>
+        }
+
+        <!-- TAGS -->
+        <h6 class="mt-4">Tags</h6>
+
+        <div class="mb-2">
+            @foreach (var tag in PredefinedTags)
+            {
+                <button type="button"
+                        class="btn btn-sm btn-outline-secondary me-1 mb-1"
+                        @onclick="() => ToggleTag(tag)">
+                    #@tag
+                </button>
+            }
+        </div>
+
+        <input class="form-control"
+               placeholder="Custom tags (comma separated)"
+               @bind="CustomTags" />
+
+        <!-- ACTIONS -->
+        <div class="mt-4">
+            <button class="btn btn-dark me-2" @onclick="Save">
+                Save Journal
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="GoBack">
+                Cancel
+            </button>
+        </div>
+
+    </div>
+}
+
+@code {
+    Journal Entry = new();
+    bool ShowAlreadyDoneScreen = false;
+
+    List<string> SelectedSecondaryMoods = new();
+    string SecondaryMoodWarning = "";
+    string CustomTags = "";
+
+    string[] AllMoods =
+    {
+        "Happy","Excited","Relaxed","Grateful","Confident",
+        "Calm","Thoughtful","Curious","Nostalgic","Bored",
+        "Sad","Angry","Stressed","Lonely","Anxious"
+    };
+
+    string[] PredefinedTags =
+    {
+        "Work","Career","Studies","Family","Friends","Health",
+        "Fitness","Travel","Finance","Self-care","Reflection",
+        "Planning","Projects","Exercise","Reading","Writing"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var today = DateTime.Today;
+        var existing = await JournalService.GetByDateAsync(today);
+
+        if (existing != null)
+        {
+            Entry = existing;
+
+            SelectedSecondaryMoods = existing.SecondaryMood?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .ToList() ?? new();
+
+            CustomTags = existing.Tags ?? "";
+            ShowAlreadyDoneScreen = true;
+        }
+        else
+        {
+            Entry.EntryDate = today;
+            Entry.CreatedAt = DateTime.Now;
+        }
+    }
+
+    async Task EditToday()
+    {
+        ShowAlreadyDoneScreen = false;
+    }
+
+    async Task Save()
+    {
+        Entry.SecondaryMood = string.Join(",", SelectedSecondaryMoods);
+        Entry.Tags = string.Join(",", GetAllTags());
+        Entry.UpdatedAt = DateTime.Now;
+
+        await JournalService.SaveAsync(Entry);
+        NavigationManager.NavigateTo("/");
+    }
+
+    void ToggleSecondaryMood(string mood)
+    {
+        SecondaryMoodWarning = "";
+
+        if (SelectedSecondaryMoods.Contains(mood))
+        {
+            SelectedSecondaryMoods.Remove(mood);
+            return;
+        }
+
+        if (SelectedSecondaryMoods.Count >= 2)
+        {
+            SecondaryMoodWarning = "You can select up to 2 secondary moods only.";
+            return;
+        }
+
+        SelectedSecondaryMoods.Add(mood);
+    }
+
+    IEnumerable<string> GetAllTags()
+    {
+        return CustomTags
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .Distinct();
+    }
+
+    void ToggleTag(string tag)
+    {
+        var tags = CustomTags
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .ToList();
+
+        if (tags.Contains(tag))
+            tags.Remove(tag);
+        else
+            tags.Add(tag);
+
+        CustomTags = string.Join(", ", tags);
+    }
+
+    void GoBack()
+        => NavigationManager.NavigateTo("/");
+}

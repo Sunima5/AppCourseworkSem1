@@ -1,0 +1,257 @@
+﻿@page "/"
+@inject JournalService JournalService
+@inject NavigationManager NavigationManager
+
+<div class="home-wrapper">
+
+    <!-- TOP -->
+    <div class="home-top">
+        <div class="card">
+            <h2>Hi, Sunima 👋</h2>
+            <p>What’s in your head?</p>
+        </div>
+
+        <div class="card search-box">
+            <input placeholder="🔍 Search (coming later)" disabled />
+        </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="home-grid">
+
+        <!-- LEFT -->
+        <div class="left">
+
+            <!-- CALENDAR -->
+            <div class="card">
+                <Calendar JournalDates="JournalDates"
+                          OnDateSelected="LoadJournalByDate" />
+            </div>
+
+            <!-- JOURNAL PREVIEW -->
+            @if (SelectedJournal != null)
+            {
+                <div class="card">
+                    <h5>@SelectedJournal.Title</h5>
+                    <p class="muted">
+                        @SelectedJournal.EntryDate.ToString("dd MMM yyyy")
+                    </p>
+                    <p>@SelectedJournal.Content</p>
+                </div>
+            }
+
+            <!-- TODO LIST -->
+            <div class="card">
+                <h5>To-do list</h5>
+
+                <div class="todo-input">
+                    <input placeholder="Add task..."
+                           @bind="NewTodo"
+                           @onkeydown="HandleTodoEnter" />
+                    <button @onclick="AddTodo">+</button>
+                </div>
+
+                @foreach (var t in Todos)
+                {
+                    <div class="todo-item">
+                        <input type="checkbox"
+                               checked="@t.Done"
+                               @onchange="() => ToggleTodo(t)" />
+
+                        <span class="@(t.Done ? "done" : "")">
+                            @t.Text
+                        </span>
+
+                        <button @onclick="() => RemoveTodo(t)">✕</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="right">
+
+            <!-- RECENT JOURNALS -->
+            <div class="card">
+                <div class="card-header">
+                    <h5>Recent Journals</h5>
+                    <button @onclick="GoAdd">＋</button>
+                </div>
+
+                @foreach (var j in RecentJournals)
+                {
+                    <div class="journal-item"
+                         @onclick="() => OpenJournal(j.EntryDate)">
+                        <strong>@j.Title</strong><br />
+                        <span class="muted">
+                            @j.EntryDate.ToString("dd MMM yyyy")
+                        </span>
+                    </div>
+                }
+            </div>
+
+            <!-- STREAKS -->
+            <div class="streak-row">
+                <div class="card streak">
+                    🔥 <strong>@CurrentStreak</strong>
+                    <div>Current</div>
+                </div>
+
+                <div class="card streak">
+                    👍 <strong>@LongestStreak</strong>
+                    <div>Longest</div>
+                </div>
+
+                <div class="card streak">
+                    ❌ <strong>@MissedDays</strong>
+                    <div>Missed</div>
+                </div>
+            </div>
+
+            <!-- TAGS -->
+            <div class="card">
+                <h5>Tags</h5>
+
+                @if (!TagCounts.Any())
+                {
+                    <p class="muted">No tags yet</p>
+                }
+                else
+                {
+                    @foreach (var tag in TagCounts)
+                    {
+                        <span class="tag"
+                              @onclick="() => OpenTag(tag.Key)">
+                            #@tag.Key (@tag.Value)
+                        </span>
+                    }
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+
+    // -------- JOURNALS --------
+    List<Journal> AllJournals = new();
+    List<Journal> RecentJournals = new();
+    List<DateTime> JournalDates = new();
+
+    Journal? SelectedJournal;
+
+    // -------- TAGS --------
+    Dictionary<string, int> TagCounts = new();
+
+    // -------- TODO --------
+    List<TodoItem> Todos = new();
+    string NewTodo = "";
+
+    // -------- STREAKS --------
+    int CurrentStreak;
+    int LongestStreak;
+    int MissedDays;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AllJournals = await JournalService.GetAllAsync();
+
+        RecentJournals = AllJournals
+            .OrderByDescending(j => j.EntryDate)
+            .Take(5)
+            .ToList();
+
+        JournalDates = AllJournals
+            .Select(j => j.EntryDate.Date)
+            .ToList();
+
+        CalculateStreaks();
+        BuildTagCounts();
+    }
+
+    // -------- CALENDAR --------
+    async Task LoadJournalByDate(DateTime date)
+    {
+        SelectedJournal = await JournalService.GetByDateAsync(date);
+    }
+
+    void OpenJournal(DateTime date)
+        => NavigationManager.NavigateTo($"/calendar");
+
+    void GoAdd()
+        => NavigationManager.NavigateTo("/add");
+
+    // -------- TAG LOGIC (FIXED) --------
+    void BuildTagCounts()
+    {
+        TagCounts = AllJournals
+            .Where(j => !string.IsNullOrWhiteSpace(j.Tags))
+            .SelectMany(j => j.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            .Select(t => t.Trim())
+            .GroupBy(t => t)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
+    void OpenTag(string tag)
+        => NavigationManager.NavigateTo($"/tag/{tag}");
+
+    // -------- TODO LOGIC --------
+    void AddTodo()
+    {
+        if (string.IsNullOrWhiteSpace(NewTodo)) return;
+        Todos.Add(new TodoItem { Text = NewTodo });
+        NewTodo = "";
+    }
+
+    void HandleTodoEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") AddTodo();
+    }
+
+    void ToggleTodo(TodoItem t) => t.Done = !t.Done;
+    void RemoveTodo(TodoItem t) => Todos.Remove(t);
+
+    class TodoItem
+    {
+        public string Text { get; set; } = "";
+        public bool Done { get; set; }
+    }
+
+    // -------- STREAK LOGIC --------
+    void CalculateStreaks()
+    {
+        var dates = AllJournals
+            .Select(j => j.EntryDate.Date)
+            .Distinct()
+            .OrderBy(d => d)
+            .ToList();
+
+        if (!dates.Any()) return;
+
+        DateTime start = new DateTime(2026, 1, 1);
+        DateTime today = DateTime.Today;
+
+        MissedDays = Enumerable
+            .Range(0, (today - start).Days + 1)
+            .Select(d => start.AddDays(d))
+            .Count(d => !dates.Contains(d));
+
+        CurrentStreak = 0;
+        for (var d = today; dates.Contains(d); d = d.AddDays(-1))
+            CurrentStreak++;
+
+        int temp = 0;
+        LongestStreak = 0;
+
+        for (int i = 0; i < dates.Count; i++)
+        {
+            if (i == 0 || dates[i] == dates[i - 1].AddDays(1))
+                temp++;
+            else
+                temp = 1;
+
+            LongestStreak = Math.Max(LongestStreak, temp);
+        }
+    }
+}

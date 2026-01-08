@@ -1,0 +1,34 @@
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+}
+
+.calendar-day {
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .calendar-day:hover {
+        background: #eee;
+    }
+
+    .calendar-day.today {
+        border: 2px solid black;
+    }
+.dot {
+    width: 6px;
+    height: 6px;
+    background: black;
+    border-radius: 50%;
+    margin: 2px auto 0;
+}
+

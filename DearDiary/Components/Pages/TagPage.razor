@@ -1,0 +1,32 @@
+﻿@page "/tag/{TagName}"
+@inject JournalService JournalService
+
+<h3>#@TagName</h3>
+
+@if (Journals.Count == 0)
+{
+    <p class="muted">No journals for this tag.</p>
+}
+else
+{
+    @foreach (var j in Journals)
+    {
+        <div class="journal-card">
+            <strong>@j.Title</strong>
+            <p class="muted">@j.EntryDate.ToString("dd MMM yyyy")</p>
+            <p>@j.Content</p>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public string TagName { get; set; } = "";
+
+    List<Journal> Journals = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Journals = await JournalService.GetByTagAsync(TagName);
+    }
+}

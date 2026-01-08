@@ -1,0 +1,234 @@
+﻿/* ============================= */
+/* GLOBAL                        */
+/* ============================= */
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    background: #f5f5f5;
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.content {
+    padding: 20px;
+}
+
+/* ============================= */
+/* SIDEBAR / NAV                 */
+/* ============================= */
+
+.sidebar {
+    width: 230px;
+    height: 100vh;
+    padding: 20px;
+    background: linear-gradient(180deg, #0a2a66, #3b0f52);
+    color: white;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.logo {
+    width: 36px;
+    height: 36px;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .nav-list li {
+        margin-bottom: 12px;
+    }
+
+    .nav-list a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 500;
+        color: white;
+    }
+
+        .nav-list a:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-list a.active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+/* Bottom user */
+.sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    color: white;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+/* ============================= */
+/* HOME LAYOUT                   */
+/* ============================= */
+
+.home-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 20px;
+}
+
+.left,
+.right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ============================= */
+/* CARDS                         */
+/* ============================= */
+
+.card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #ddd;
+}
+
+/* ============================= */
+/* SEARCH                        */
+/* ============================= */
+
+.search-box input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    background: white;
+}
+
+/* ============================= */
+/* JOURNAL LIST                  */
+/* ============================= */
+
+.journal-item {
+    padding: 10px 6px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+    .journal-item:last-child {
+        border-bottom: none;
+    }
+
+    .journal-item:hover {
+        background: #f3f3f3;
+    }
+
+/* ============================= */
+/* TODO LIST                     */
+/* ============================= */
+
+.todo-input {
+    display: flex;
+    gap: 8px;
+}
+
+    .todo-input input {
+        flex: 1;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+    .todo-item .done {
+        text-decoration: line-through;
+        color: #777;
+    }
+
+/* ============================= */
+/* STREAKS                       */
+/* ============================= */
+
+.streak-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.streak {
+    text-align: center;
+}
+
+/* ============================= */
+/* TAGS                          */
+/* ============================= */
+
+.tag {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #f0f0f0;
+    margin: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+    .tag:hover {
+        background: #e0e0e0;
+    }
+
+/* ============================= */
+/* BLAZOR ERROR UI               */
+/* ============================= */
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }

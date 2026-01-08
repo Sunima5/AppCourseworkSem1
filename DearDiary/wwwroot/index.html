@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>DearDiary</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="DearDiary.styles.css" />
+    <link rel="icon" href="data:,">
+</head>
+<script>
+    window.theme = {
+        setDark: function (isDark) {
+            if (!document || !document.body) return;
+            document.body.classList.toggle("dark", isDark);
+        },
+        get: function () {
+            return localStorage.getItem("theme");
+        },
+        set: function (value) {
+            localStorage.setItem("theme", value);
+        }
+    };
+</script>
+
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <!-- Blazor -->
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+
+    <!-- ✅ ADD THIS LINE -->
+    <script src="editor.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,23 @@
+.journals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.journal-box {
+    background: white;
+    padding: 18px;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+    .journal-box .preview {
+        font-size: 14px;
+        color: #555;
+    }
+
+    .journal-box .actions {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+    }

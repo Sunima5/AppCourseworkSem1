@@ -1,0 +1,92 @@
+﻿@using System.Globalization
+
+<div class="calendar-card">
+
+    <div class="calendar-header">
+        <button @onclick="PrevMonth">‹</button>
+        <strong>@CurrentMonth.ToString("MMMM yyyy")</strong>
+        <button @onclick="NextMonth">›</button>
+    </div>
+
+    <div class="calendar-grid header">
+        @foreach (var d in WeekDays)
+        {
+            <div>@d</div>
+        }
+    </div>
+
+    <div class="calendar-grid">
+        @foreach (var date in Dates)
+        {
+            <div class="calendar-day
+                        @(IsToday(date) ? "today" : "")
+                        @(HasJournal(date) ? "has-journal" : "")"
+                 @onclick="() => Select(date)">
+
+                <div>@date.Day</div>
+
+                @if (HasJournal(date))
+                {
+                    <div class="dot"></div>
+                }
+            </div>
+        }
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public EventCallback<DateTime> OnDateSelected { get; set; }
+    [Parameter] public List<DateTime> JournalDates { get; set; } = new();
+
+    DateTime CurrentMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+    string[] WeekDays =
+        CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
+
+    List<DateTime> Dates = new();
+
+    protected override void OnInitialized()
+    {
+        Build();
+    }
+
+    void PrevMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(-1);
+        Build();
+    }
+
+    void NextMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(1);
+        Build();
+    }
+
+    void Build()
+    {
+        Dates.Clear();
+
+        var start = CurrentMonth;
+        while (start.DayOfWeek != DayOfWeek.Sunday)
+            start = start.AddDays(-1);
+
+        for (int i = 0; i < 42; i++)
+        {
+            Dates.Add(start);
+            start = start.AddDays(1);
+        }
+    }
+
+    async Task Select(DateTime date)
+    {
+        if (OnDateSelected.HasDelegate)
+            await OnDateSelected.InvokeAsync(date.Date);
+    }
+
+    bool HasJournal(DateTime date)
+        => JournalDates.Any(d => d.Date == date.Date);
+
+    bool IsToday(DateTime date)
+        => date.Date == DateTime.Today;
+}
