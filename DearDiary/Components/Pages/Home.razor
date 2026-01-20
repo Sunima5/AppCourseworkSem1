@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject JournalService JournalService
+@inject TagService TagService
 @inject NavigationManager NavigationManager
 
 <div class="home-wrapper">
@@ -166,8 +167,9 @@
             .Select(j => j.EntryDate.Date)
             .ToList();
 
+        TagCounts = await TagService.GetTagCountsAsync();
+
         CalculateStreaks();
-        BuildTagCounts();
     }
 
     // -------- CALENDAR --------
@@ -182,17 +184,7 @@
     void GoAdd()
         => NavigationManager.NavigateTo("/add");
 
-    // -------- TAG LOGIC (FIXED) --------
-    void BuildTagCounts()
-    {
-        TagCounts = AllJournals
-            .Where(j => !string.IsNullOrWhiteSpace(j.Tags))
-            .SelectMany(j => j.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
-            .Select(t => t.Trim())
-            .GroupBy(t => t)
-            .ToDictionary(g => g.Key, g => g.Count());
-    }
-
+    // -------- TAG NAV --------
     void OpenTag(string tag)
         => NavigationManager.NavigateTo($"/tag/{tag}");
 
