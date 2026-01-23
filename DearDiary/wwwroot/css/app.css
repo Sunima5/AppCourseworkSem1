@@ -232,3 +232,130 @@ a {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+/* ============================= */
+/* QUILL EDITOR SIZE FIX         */
+/* ============================= */
+
+/* Outer quill container */
+#editor {
+    height: 180px !important;
+}
+
+/* Actual typing area inside Quill */
+.ql-editor {
+    min-height: 120px !important;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+/* Toolbar spacing fix */
+.ql-toolbar {
+    border-radius: 8px 8px 0 0;
+}
+
+.ql-container {
+    border-radius: 0 0 8px 8px;
+}
+
+/* Journal editor + mood grouping */
+.journal-entry-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Make editor not overpowering */
+.journal-editor {
+    width: 100%;
+    max-width: 900px;
+    height: 180px;
+    border-radius: 12px;
+}
+
+/* Mood heading */
+.mood-heading {
+    margin-top: 10px;
+    margin-bottom: 4px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Center the wheel PROPERLY */
+.mood-wheel {
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+
+
+.mood-segment {
+    font-size: 15px;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+
+
+    .mood-segment:hover {
+        opacity: 0.9;
+        transform: scale(1.05);
+        z-index: 2;
+    }
+
+.mood-active {
+    outline: 4px solid white;
+    box-shadow: 0 0 0 4px rgba(0,0,0,0.2);
+}
+
+
+.mood-happy {
+    background: #f4c430;
+}
+
+.mood-sad {
+    background: #4a6fa5;
+}
+
+.mood-angry {
+    background: #d64545;
+}
+
+.mood-fear {
+    background: #6a4c93;
+}
+
+.mood-surprise {
+    background: #f08a24;
+}
+
+.mood-peaceful {
+    background: #3aa17e;
+}
+
+.mood-svg {
+    display: block;
+    margin: 20px auto;
+}
+
+    .mood-svg path {
+        transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .mood-svg g:hover path {
+        opacity: 0.9;
+        transform: scale(1.02);
+        transform-origin: center;
+    }
+
+.mood-selected {
+    stroke: white;
+    stroke-width: 4;
+}

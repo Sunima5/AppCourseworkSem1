@@ -1,5 +1,5 @@
 ﻿@page "/tag/{TagName}"
-@inject JournalService JournalService
+@inject TagService TagService
 
 <h3>#@TagName</h3>
 
@@ -25,8 +25,8 @@ else
 
     List<Journal> Journals = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        Journals = await JournalService.GetByTagAsync(TagName);
+        Journals = await TagService.GetByTagAsync(TagName);
     }
 }

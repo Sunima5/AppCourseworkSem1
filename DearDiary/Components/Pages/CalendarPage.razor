@@ -1,4 +1,5 @@
 ﻿@page "/calendar"
+
 @inject JournalService JournalService
 @inject NavigationManager Nav
 
@@ -46,6 +47,7 @@ else if (SelectedDate != null)
 }
 
 @code {
+
     List<DateTime> JournalDates = new();
 
     Journal? SelectedJournal;
@@ -63,17 +65,22 @@ else if (SelectedDate != null)
         SelectedJournal = await JournalService.GetByDateAsync(date);
     }
 
+    // 📅 EDIT BY DATE (ROUTE-BASED)
     void Edit()
     {
         if (SelectedJournal != null)
-            Nav.NavigateTo($"/add?date={SelectedJournal.EntryDate:yyyy-MM-dd}");
+        {
+            Nav.NavigateTo($"/add/{SelectedJournal.EntryDate:yyyy-MM-dd}");
+        }
     }
 
+    // 🗑 DELETE BY ID (SERVICE EXPECTS INT)
     async Task Delete()
     {
         if (SelectedJournal == null) return;
 
-        await JournalService.DeleteAsync(SelectedJournal.EntryDate);
+        await JournalService.DeleteAsync(SelectedJournal.Id);
+
         JournalDates.Remove(SelectedJournal.EntryDate.Date);
 
         SelectedJournal = null;

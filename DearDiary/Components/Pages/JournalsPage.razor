@@ -1,47 +1,71 @@
 ﻿@page "/journals"
+
 @inject JournalService JournalService
 @inject NavigationManager Nav
 
 <h3>📖 All Journals</h3>
 
-<div class="journals-grid">
-@foreach (var j in Journals)
+@if (!Journals.Any())
 {
-    <div class="journal-box">
-        <h5>@j.Title</h5>
-        <p class="muted">@j.EntryDate.ToString("dd MMM yyyy")</p>
+    <p class="text-muted">No journals yet.</p>
+}
+else
+{
+    <div class="journals-grid">
+        @foreach (var j in Journals)
+        {
+            <div class="journal-box">
+                <h5>@j.Title</h5>
+                <p class="muted">@j.EntryDate.ToString("dd MMM yyyy")</p>
 
-        <p class="preview">
-            @(j.Content.Length > 120 ? j.Content[..120] + "..." : j.Content)
-        </p>
-
-        <div class="actions">
-            <button class="btn btn-sm btn-outline-primary"
-                    @onclick="() => Edit(j.EntryDate)">Edit</button>
-
-            <button class="btn btn-sm btn-outline-danger"
-                    @onclick="() => Delete(j.EntryDate)">Delete</button>
+                <div class="preview">
+                    @((MarkupString)(
+                                j.Content.Length > 120
+                                ? j.Content[..120] + "..."
+                                : j.Content
+                                ))
         </div>
+
+                <div class="actions">
+                    <!-- 🔥 EDIT BY DATE -->
+                    <button class="btn btn-sm btn-outline-primary"
+                            @onclick="() => Edit(j.EntryDate)">
+                        Edit
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-danger"
+                            @onclick="() => Delete(j.Id)">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        }
     </div>
 }
-</div>
+
+<button class="btn btn-success mt-3" @onclick="AddNew">
+    ➕ Add Journal
+</button>
 
 @code {
+
     List<Journal> Journals = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Journals = (await JournalService.GetAllAsync())
-            .OrderByDescending(j => j.EntryDate)
-            .ToList();
+        Journals = await JournalService.GetAllAsync();
     }
 
-    void Edit(DateTime date)
-        => Nav.NavigateTo($"/add?date={date:yyyy-MM-dd}");
+    void AddNew()
+        => Nav.NavigateTo("/add");
 
-    async Task Delete(DateTime date)
+    // 📅 Navigate using EntryDate (CORE FIX)
+    void Edit(DateTime date)
+        => Nav.NavigateTo($"/add/{date:yyyy-MM-dd}");
+
+    async Task Delete(int id)
     {
-        await JournalService.DeleteAsync(date);
+        await JournalService.DeleteAsync(id);
         Journals = await JournalService.GetAllAsync();
     }
 }

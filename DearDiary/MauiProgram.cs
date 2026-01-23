@@ -18,16 +18,34 @@ namespace DearDiary
 
             builder.Services.AddMauiBlazorWebView();
 
-            // ✅ ADD THIS LINE
+            // ✅ REGISTER SERVICES
             builder.Services.AddSingleton<JournalService>();
+            builder.Services.AddSingleton<TagService>();
+            builder.Services.AddSingleton<MoodService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
-
             builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
+            // 🔥 BUILD APP
+            var app = builder.Build();
+
+            // 🔥 SEED DATABASE ONCE
+            SeedDatabase(app);
+
+            return app;
+        }
+
+        private static async void SeedDatabase(MauiApp app)
+        {
+            using var scope = app.Services.CreateScope();
+
+            var tagService = scope.ServiceProvider.GetRequiredService<TagService>();
+            await tagService.SeedTagsAsync();
+
+            var moodService = scope.ServiceProvider.GetRequiredService<MoodService>();
+            await moodService.SeedMoodsAsync();
         }
     }
 }

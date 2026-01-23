@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using DearDiary.Data;
 using DearDiary.Models;
 
 namespace DearDiary.Services;
@@ -9,11 +10,30 @@ public class JournalService
 
     public JournalService()
     {
-        var path = Path.Combine(FileSystem.AppDataDirectory, "deardiary.db");
-        _db = new SQLiteAsyncConnection(path);
-        _db.CreateTableAsync<Journal>().Wait();
+        _db = AppDatabase.Database;
     }
 
+    /* ========================= */
+    /* JOURNAL CRUD              */
+    /* ========================= */
+
+    // Save or Update
+    public async Task<int> SaveAsync(Journal journal)
+    {
+        journal.UpdatedAt = DateTime.Now;
+
+        if (journal.Id != 0)
+        {
+            await _db.UpdateAsync(journal);
+            return journal.Id;
+        }
+
+        journal.CreatedAt = DateTime.Now;
+        await _db.InsertAsync(journal);
+        return journal.Id;
+    }
+
+    // Get all journals
     public async Task<List<Journal>> GetAllAsync()
     {
         return await _db.Table<Journal>()
@@ -21,75 +41,31 @@ public class JournalService
             .ToListAsync();
     }
 
+    // 🔥 IMPORTANT: Get journal by DATE (not ID)
     public async Task<Journal?> GetByDateAsync(DateTime date)
     {
+        var normalizedDate = date.Date;
+
         return await _db.Table<Journal>()
-            .Where(j => j.EntryDate == date.Date)
+            .Where(j => j.EntryDate == normalizedDate)
             .FirstOrDefaultAsync();
     }
 
-    public async Task SaveAsync(Journal journal)
+    // Get by ID (still useful)
+    public async Task<Journal?> GetByIdAsync(int id)
     {
-        journal.EntryDate = journal.EntryDate.Date;
-
-        var existing = await GetByDateAsync(journal.EntryDate);
-
-        if (existing == null)
-        {
-            journal.CreatedAt = DateTime.Now;
-            journal.UpdatedAt = DateTime.Now;
-            await _db.InsertAsync(journal);
-        }
-        else
-        {
-            existing.Title = journal.Title;
-            existing.Content = journal.Content;
-            existing.PrimaryMood = journal.PrimaryMood;
-            existing.SecondaryMood = journal.SecondaryMood;
-            existing.Tags = journal.Tags;
-            existing.UpdatedAt = DateTime.Now;
-
-            await _db.UpdateAsync(existing);
-        }
+        return await _db.FindAsync<Journal>(id);
     }
 
-    public async Task DeleteAsync(DateTime date)
+    // Delete by ID
+    public async Task DeleteAsync(int id)
     {
-        var existing = await GetByDateAsync(date);
-        if (existing != null)
-            await _db.DeleteAsync(existing);
+        await _db.DeleteAsync<Journal>(id);
     }
 
-    // TAG FILTER
-    public async Task<List<Journal>> GetByTagAsync(string tag)
+    // 🔒 Ensure only ONE journal per day
+    public async Task<bool> ExistsForDateAsync(DateTime date)
     {
-        return await _db.Table<Journal>()
-            .Where(j => j.Tags.Contains(tag))
-            .OrderByDescending(j => j.EntryDate)
-            .ToListAsync();
-    }
-
-    // TAG COUNTS
-    public async Task<Dictionary<string, int>> GetTagCountsAsync()
-    {
-        var journals = await GetAllAsync();
-        var dict = new Dictionary<string, int>();
-
-        foreach (var j in journals)
-        {
-            if (string.IsNullOrWhiteSpace(j.Tags))
-                continue;
-
-            foreach (var tag in j.Tags.Split(','))
-            {
-                var t = tag.Trim();
-                if (dict.ContainsKey(t))
-                    dict[t]++;
-                else
-                    dict[t] = 1;
-            }
-        }
-
-        return dict;
+        return await GetByDateAsync(date) != null;
     }
 }
