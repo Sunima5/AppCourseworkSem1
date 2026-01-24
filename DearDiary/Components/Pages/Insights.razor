@@ -1,0 +1,301 @@
+﻿@page "/insights"
+
+@inject MoodService MoodService
+@inject JournalService JournalService
+@inject TagService TagService
+@inject IJSRuntime JS
+
+<h3 class="mb-4">📊 Insights</h3>
+
+<div class="insights-grid">
+
+    <!-- LEFT -->
+    <div class="left">
+
+        <!-- MOOD CHART -->
+        <div class="card">
+            <h5><b>😊 Mood Distribution</b></h5>
+
+            <div class="chart-box">
+                <canvas id="moodPieChart"></canvas>
+            </div>
+
+            @if (TotalMoods == 0)
+            {
+                <p class="muted mt-2">No mood data yet.</p>
+            }
+            else
+            {
+                <div class="mood-percentages mt-3">
+                    @foreach (var m in MoodData)
+                    {
+                        <div class="mood-row">
+                            <span>@GetEmoji(m.Key) @m.Key</span>
+                            <strong>@GetPercentage(m.Value)</strong>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- 🏷️ MOST USED TAGS -->
+        @if (TagCounts.Any())
+        {
+            <div class="card">
+                <h5><b>🏷️ Most Used Tags</b></h5>
+
+                <div class="chart-box">
+                    <canvas id="tagBarChart"></canvas>
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+
+        <!-- WORD COUNT -->
+        <div class="card">
+            <h5><b>✍️ Word Count</b></h5>
+            <h2>@TotalWordCount</h2>
+            <p class="muted">total words written</p>
+        </div>
+
+        <!-- STREAKS -->
+        <div class="card">
+            <h5><b>🔥 Writing Streaks</b></h5>
+
+            <div class="streak-row">
+                <div class="streak">
+                    <strong>@CurrentStreak</strong>
+                    <div>Current</div>
+                </div>
+
+                <div class="streak">
+                    <strong>@LongestStreak</strong>
+                    <div>Longest</div>
+                </div>
+
+                <div class="streak">
+                    <strong>@MissedDays</strong>
+                    <div>Missed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📂 TAG BREAKDOWN (BOTTOM RIGHT) -->
+        @if (CategoryCounts.Any())
+        {
+            <div class="card">
+                <h5><b>📂 Life Focus Breakdown</b></h5>
+
+                <div class="chart-box">
+                    <canvas id="tagCategoryChart"></canvas>
+                </div>
+            </div>
+        }
+
+    </div>
+
+</div>
+
+@code {
+
+    // -------- DATA --------
+    Dictionary<string, int> MoodData = new();
+    Dictionary<string, int> TagCounts = new();
+    Dictionary<string, int> CategoryCounts = new();
+    List<Journal> AllJournals = new();
+
+    // -------- WORD COUNT --------
+    int TotalWordCount;
+
+    // -------- STREAKS --------
+    int CurrentStreak;
+    int LongestStreak;
+    int MissedDays;
+
+    int TotalMoods => MoodData.Values.Sum();
+
+    // -------- TAG → CATEGORY MAP --------
+    readonly Dictionary<string, string> TagCategoryMap = new()
+    {
+        { "work", "Work & Career" }, { "career", "Work & Career" },
+        { "projects", "Work & Career" }, { "planning", "Work & Career" },
+
+        { "studies", "Studies & Learning" }, { "reading", "Studies & Learning" },
+        { "writing", "Studies & Learning" },
+
+        { "family", "Relationships & Family" }, { "friends", "Relationships & Family" },
+        { "relationships", "Relationships & Family" }, { "parenting", "Relationships & Family" },
+
+        { "health", "Health & Well-being" }, { "fitness", "Health & Well-being" },
+        { "exercise", "Health & Well-being" }, { "self-care", "Health & Well-being" },
+        { "meditation", "Health & Well-being" }, { "yoga", "Health & Well-being" },
+
+        { "personal growth", "Personal Growth" }, { "reflection", "Personal Growth" },
+        { "spirituality", "Personal Growth" },
+
+        { "hobbies", "Lifestyle & Hobbies" }, { "music", "Lifestyle & Hobbies" },
+        { "cooking", "Lifestyle & Hobbies" }, { "shopping", "Lifestyle & Hobbies" },
+
+        { "travel", "Travel & Events" }, { "nature", "Travel & Events" },
+        { "holiday", "Travel & Events" }, { "vacation", "Travel & Events" },
+        { "birthday", "Travel & Events" }, { "celebration", "Travel & Events" },
+
+        { "finance", "Finance & Planning" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        MoodData = await MoodService.GetPrimaryMoodDistributionAsync();
+        AllJournals = await JournalService.GetAllAsync() ?? new();
+
+        TagCounts = (await TagService.GetTagCountsAsync())
+            .OrderByDescending(t => t.Value)
+            .Take(5)
+            .ToDictionary(t => t.Key, t => t.Value);
+
+        CalculateCategoryBreakdown();
+        CalculateWordCount();
+        CalculateStreaks(AllJournals);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        if (TotalMoods > 0)
+        {
+            await JS.InvokeVoidAsync(
+                "renderMoodPieChart",
+                new[] { "Positive", "Neutral", "Negative" },
+                new[]
+                {
+                    MoodData.GetValueOrDefault("Positive"),
+                    MoodData.GetValueOrDefault("Neutral"),
+                    MoodData.GetValueOrDefault("Negative")
+                }
+            );
+        }
+
+        if (TagCounts.Any())
+        {
+            await JS.InvokeVoidAsync(
+                "renderTagBarChart",
+                TagCounts.Keys.ToArray(),
+                TagCounts.Values.ToArray()
+            );
+        }
+
+        if (CategoryCounts.Any())
+        {
+            await JS.InvokeVoidAsync(
+                "renderTagCategoryChart",
+                CategoryCounts.Keys.ToArray(),
+                CategoryCounts.Values.ToArray()
+            );
+        }
+    }
+
+    // -------- CATEGORY BREAKDOWN --------
+    void CalculateCategoryBreakdown()
+    {
+        CategoryCounts.Clear();
+
+        foreach (var j in AllJournals)
+        {
+            if (string.IsNullOrWhiteSpace(j.Tags)) continue;
+
+            var tags = j.Tags
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim().ToLower());
+
+            foreach (var tag in tags)
+            {
+                if (TagCategoryMap.TryGetValue(tag, out var category))
+                {
+                    if (!CategoryCounts.ContainsKey(category))
+                        CategoryCounts[category] = 0;
+
+                    CategoryCounts[category]++;
+                }
+            }
+        }
+    }
+
+    // -------- WORD COUNT --------
+    void CalculateWordCount()
+    {
+        TotalWordCount = AllJournals.Sum(j =>
+        {
+            if (string.IsNullOrWhiteSpace(j.Content)) return 0;
+
+            var text = System.Text.RegularExpressions.Regex
+                .Replace(j.Content, "<.*?>", "");
+
+            return text
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Length;
+        });
+    }
+
+    // -------- STREAK LOGIC --------
+    void CalculateStreaks(List<Journal> journals)
+    {
+        var dates = journals
+            .Select(j => j.EntryDate.Date)
+            .Distinct()
+            .OrderBy(d => d)
+            .ToList();
+
+        DateTime start = new DateTime(2026, 1, 1);
+        DateTime today = DateTime.Today;
+
+        if (!dates.Any())
+        {
+            CurrentStreak = 0;
+            LongestStreak = 0;
+            MissedDays = (today - start).Days + 1;
+            return;
+        }
+
+        MissedDays = Enumerable
+            .Range(0, (today - start).Days + 1)
+            .Select(d => start.AddDays(d))
+            .Count(d => !dates.Contains(d));
+
+        CurrentStreak = 0;
+        for (var d = today; dates.Contains(d); d = d.AddDays(-1))
+            CurrentStreak++;
+
+        int temp = 0;
+        LongestStreak = 0;
+
+        for (int i = 0; i < dates.Count; i++)
+        {
+            if (i == 0 || dates[i] == dates[i - 1].AddDays(1))
+                temp++;
+            else
+                temp = 1;
+
+            LongestStreak = Math.Max(LongestStreak, temp);
+        }
+    }
+
+    // -------- HELPERS --------
+    string GetEmoji(string mood) => mood switch
+    {
+        "Positive" => "😊",
+        "Neutral" => "😐",
+        "Negative" => "😔",
+        _ => "🙂"
+    };
+
+    string GetPercentage(int count)
+    {
+        if (TotalMoods == 0) return "0%";
+        return $"{Math.Round((double)count / TotalMoods * 100)}%";
+    }
+}

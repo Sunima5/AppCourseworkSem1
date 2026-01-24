@@ -53,8 +53,8 @@ public class MoodService
     /* READ FOR UI                  */
     /* ============================= */
 
-  
-      public async Task<List<string>> GetPrimaryMoodsAsync()
+
+    public async Task<List<string>> GetPrimaryMoodsAsync()
     {
         var moods = await _db.Table<Mood>().ToListAsync();
 
@@ -71,5 +71,22 @@ public class MoodService
             .Where(m => m.Category == category)
             .OrderBy(m => m.Name)
             .ToListAsync();
+    }
+
+/* ============================= */
+/* ANALYTICS                     */
+/* ============================= */
+
+public async Task<Dictionary<string, int>> GetPrimaryMoodDistributionAsync()
+    {
+        var journals = await _db.Table<Journal>().ToListAsync();
+
+        return journals
+            .Where(j => !string.IsNullOrWhiteSpace(j.PrimaryMood))
+            .GroupBy(j => j.PrimaryMood)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Count()
+            );
     }
 }

@@ -336,3 +336,30 @@ a {
     .nav-list a i {
         color: #1f2937 !important;
     }
+.insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.mood-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 15px;
+}
+.chart-box {
+    width: 220px; /* 👈 change this if needed */
+    height: 220px;
+    margin: 10px auto;
+}
+
+    .chart-box canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+.mood-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+}
