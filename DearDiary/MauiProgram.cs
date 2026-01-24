@@ -28,16 +28,18 @@ namespace DearDiary
             builder.Logging.AddDebug();
 #endif
 
-            // 🔥 BUILD APP
             var app = builder.Build();
 
-            // 🔥 SEED DATABASE ONCE
-            SeedDatabase(app);
+            // 🔥 SAFE BACKGROUND SEEDING (NON-BLOCKING)
+            Task.Run(async () =>
+            {
+                await SeedDatabaseAsync(app);
+            });
 
             return app;
         }
 
-        private static async void SeedDatabase(MauiApp app)
+        private static async Task SeedDatabaseAsync(MauiApp app)
         {
             using var scope = app.Services.CreateScope();
 

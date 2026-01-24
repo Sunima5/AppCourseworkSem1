@@ -1,6 +1,6 @@
-﻿using SQLite;
-using DearDiary.Data;
+﻿using DearDiary.Data;
 using DearDiary.Models;
+using SQLite;
 
 namespace DearDiary.Services;
 
@@ -14,75 +14,61 @@ public class MoodService
     }
 
     /* ============================= */
-    /* SEED DATA (RUNS ONCE)         */
+    /* SEED MOODS (RUN ONCE)         */
     /* ============================= */
 
     public async Task SeedMoodsAsync()
     {
         var count = await _db.Table<Mood>().CountAsync();
-        if (count > 0) return; // already seeded
+        if (count > 0) return;
 
-        // PRIMARY MOODS
-        var primaryMoods = new[]
+        var moods = new[]
         {
-            new Mood { Name = "Happy", Type = "Primary" },
-            new Mood { Name = "Sad", Type = "Primary" },
-            new Mood { Name = "Angry", Type = "Primary" },
-            new Mood { Name = "Fear", Type = "Primary" },
-            new Mood { Name = "Surprise", Type = "Primary" },
-            new Mood { Name = "Peaceful", Type = "Primary" }
+            // POSITIVE
+            new Mood { Category = "Positive", Name = "Happy" },
+            new Mood { Category = "Positive", Name = "Excited" },
+            new Mood { Category = "Positive", Name = "Relaxed" },
+            new Mood { Category = "Positive", Name = "Grateful" },
+            new Mood { Category = "Positive", Name = "Confident" },
+
+            // NEUTRAL
+            new Mood { Category = "Neutral", Name = "Calm" },
+            new Mood { Category = "Neutral", Name = "Thoughtful" },
+            new Mood { Category = "Neutral", Name = "Curious" },
+            new Mood { Category = "Neutral", Name = "Nostalgic" },
+            new Mood { Category = "Neutral", Name = "Bored" },
+
+            // NEGATIVE
+            new Mood { Category = "Negative", Name = "Sad" },
+            new Mood { Category = "Negative", Name = "Angry" },
+            new Mood { Category = "Negative", Name = "Stressed" },
+            new Mood { Category = "Negative", Name = "Lonely" },
+            new Mood { Category = "Negative", Name = "Anxious" }
         };
 
-        await _db.InsertAllAsync(primaryMoods);
-
-        // Fetch inserted primaries (to get IDs)
-        var primaries = await _db.Table<Mood>()
-            .Where(m => m.Type == "Primary")
-            .ToListAsync();
-
-        int Id(string name) => primaries.First(m => m.Name == name).Id;
-
-        // SECONDARY MOODS
-        var secondaryMoods = new[]
-        {
-            new Mood { Name = "Cheerful", Type = "Secondary", ParentMoodId = Id("Happy") },
-            new Mood { Name = "Proud", Type = "Secondary", ParentMoodId = Id("Happy") },
-
-            new Mood { Name = "Lonely", Type = "Secondary", ParentMoodId = Id("Sad") },
-            new Mood { Name = "Tired", Type = "Secondary", ParentMoodId = Id("Sad") },
-
-            new Mood { Name = "Frustrated", Type = "Secondary", ParentMoodId = Id("Angry") },
-            new Mood { Name = "Irritated", Type = "Secondary", ParentMoodId = Id("Angry") },
-
-            new Mood { Name = "Anxious", Type = "Secondary", ParentMoodId = Id("Fear") },
-            new Mood { Name = "Worried", Type = "Secondary", ParentMoodId = Id("Fear") },
-
-            new Mood { Name = "Shocked", Type = "Secondary", ParentMoodId = Id("Surprise") },
-            new Mood { Name = "Confused", Type = "Secondary", ParentMoodId = Id("Surprise") },
-
-            new Mood { Name = "Calm", Type = "Secondary", ParentMoodId = Id("Peaceful") },
-            new Mood { Name = "Grateful", Type = "Secondary", ParentMoodId = Id("Peaceful") }
-        };
-
-        await _db.InsertAllAsync(secondaryMoods);
+        await _db.InsertAllAsync(moods);
     }
 
     /* ============================= */
-    /* READ METHODS (FOR UI LATER)   */
+    /* READ FOR UI                  */
     /* ============================= */
 
-    public async Task<List<Mood>> GetPrimaryMoodsAsync()
+  
+      public async Task<List<string>> GetPrimaryMoodsAsync()
     {
-        return await _db.Table<Mood>()
-            .Where(m => m.Type == "Primary")
-            .OrderBy(m => m.Name)
-            .ToListAsync();
+        var moods = await _db.Table<Mood>().ToListAsync();
+
+        return moods
+            .Select(m => m.Category)
+            .Distinct()
+            .ToList();
     }
 
-    public async Task<List<Mood>> GetSecondaryMoodsAsync(int primaryMoodId)
+
+    public async Task<List<Mood>> GetSecondaryMoodsAsync(string category)
     {
         return await _db.Table<Mood>()
-            .Where(m => m.ParentMoodId == primaryMoodId)
+            .Where(m => m.Category == category)
             .OrderBy(m => m.Name)
             .ToListAsync();
     }

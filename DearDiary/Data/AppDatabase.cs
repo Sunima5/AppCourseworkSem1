@@ -1,5 +1,5 @@
-﻿using SQLite;
-using DearDiary.Models;
+﻿using DearDiary.Models;
+using SQLite;
 
 namespace DearDiary.Data;
 
@@ -26,7 +26,7 @@ public class AppDatabase
                 _database.CreateTableAsync<Tag>().Wait();
                 _database.CreateTableAsync<JournalMood>().Wait();
                 _database.CreateTableAsync<JournalTag>().Wait();
-
+            
             }
 
             return _database;

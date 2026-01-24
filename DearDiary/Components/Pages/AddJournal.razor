@@ -2,20 +2,88 @@
 @page "/add/{date}"
 
 @inject JournalService JournalService
+@inject MoodService MoodService
+@inject TagService TagService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
-<h3>@(IsEdit ? "✏️ Edit Journal" : "➕ Add Journal")</h3>
-
 <div class="card p-4">
 
+    <!-- TITLE -->
     <input class="form-control mb-3"
            placeholder="Journal title"
            @bind="Entry.Title" />
 
-    <!-- Rich Text Editor -->
+    <!-- CONTENT -->
     <div id="editor" style="height:220px;" class="mb-4"></div>
 
+    <!-- ================= MOODS ================= -->
+
+    <h5>How did today feel overall?</h5>
+
+    @foreach (var mood in PrimaryMoods)
+    {
+        <label class="d-block mb-1">
+            <input type="radio"
+                   name="primaryMood"
+                   value="@mood"
+                   checked="@(PrimaryMood == mood)"
+                   @onchange="() => SelectPrimary(mood)" />
+
+            @GetMoodEmoji(mood) @mood
+        </label>
+    }
+
+    @if (!string.IsNullOrEmpty(PrimaryMood))
+    {
+        <div class="mt-3 ms-3">
+            <p class="mb-1">What best describes your feeling? (select up to 2)</p>
+
+            @foreach (var mood in SecondaryMoods)
+            {
+                <label class="d-block">
+                    <input type="checkbox"
+                           checked="@SecondarySelected.Contains(mood.Name)"
+                           disabled="@(!SecondarySelected.Contains(mood.Name) && SecondarySelected.Count >= 2)"
+                           @onchange="() => ToggleSecondary(mood.Name)" />
+                    @mood.Name
+                </label>
+            }
+        </div>
+    }
+
+    <!-- ================= TAGS ================= -->
+
+    <h5 class="mt-4">🏷️ Tags (optional)</h5>
+
+    <div class="row">
+        @foreach (var tag in AllTags)
+        {
+            <div class="col-6 col-md-4">
+                <label>
+                    <input type="checkbox"
+                           checked="@SelectedTags.Contains(tag.Name)"
+                           @onchange="() => ToggleTag(tag.Name)" />
+                    @tag.Name
+                </label>
+            </div>
+        }
+    </div>
+
+    <!-- CUSTOM TAGS -->
+    <div class="mt-3">
+        <label class="form-label">Custom tags (comma separated)</label>
+        <input class="form-control"
+               placeholder="e.g. exam, deadline, stress"
+               @bind="CustomTagsInput" />
+    </div>
+
+    @if (ShowError)
+    {
+        <p class="text-danger mt-3">@ErrorMessage</p>
+    }
+
+    <!-- ACTIONS -->
     <div class="mt-4">
         <button class="btn btn-dark me-2" @onclick="Save">
             Save Journal
@@ -30,70 +98,132 @@
 
 @code {
 
-    // 🔑 ROUTE PARAM AS STRING
+    /* ================= ROUTING ================= */
+
     [Parameter]
     public string? Date { get; set; }
 
     bool IsEdit => !string.IsNullOrWhiteSpace(Date);
 
+    /* ================= STATE ================= */
+
     Journal Entry = new();
+
+    List<string> PrimaryMoods = new();
+    string PrimaryMood = "";
+
+    List<Mood> SecondaryMoods = new();
+    List<string> SecondarySelected = new();
+
+    List<Tag> AllTags = new();
+    List<string> SelectedTags = new();
+
+    string CustomTagsInput = "";
 
     bool quillInitialized = false;
 
+    bool ShowError = false;
+    string ErrorMessage = "";
+
+    /* ================= INIT ================= */
+
     protected override async Task OnInitializedAsync()
     {
+        PrimaryMoods = await MoodService.GetPrimaryMoodsAsync();
+        AllTags = await TagService.GetAllAsync();
+
         // ✏️ EDIT MODE
         if (IsEdit && DateTime.TryParse(Date, out var parsedDate))
         {
-            var journal = await JournalService.GetByDateAsync(parsedDate.Date);
+            var journal = await JournalService.GetByDateAsync(parsedDate);
 
             if (journal != null)
             {
-                Entry = new Journal
-                {
-                    Id = journal.Id,
-                    EntryDate = journal.EntryDate, // ✅ ALWAYS VALID
-                    Title = journal.Title,
-                    Content = journal.Content,
-                    PrimaryMood = journal.PrimaryMood,
-                    SecondaryMood = journal.SecondaryMood,
-                    Tags = journal.Tags,
-                    CreatedAt = journal.CreatedAt,
-                    UpdatedAt = journal.UpdatedAt
-                };
+                Entry = journal;
+
+                PrimaryMood = journal.PrimaryMood ?? "";
+
+                SecondarySelected = string.IsNullOrWhiteSpace(journal.SecondaryMood)
+                    ? new()
+                    : journal.SecondaryMood
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(m => m.Trim())
+                        .ToList();
+
+                SelectedTags = string.IsNullOrWhiteSpace(journal.Tags)
+                    ? new()
+                    : journal.Tags
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(t => t.Trim())
+                        .ToList();
+
+                SecondaryMoods =
+                    await MoodService.GetSecondaryMoodsAsync(PrimaryMood);
+
+                CustomTagsInput = string.Join(", ", SelectedTags);
             }
 
-            return; // ⛔ STOP HERE
+            return;
         }
 
         // ➕ ADD MODE
-        var exists = await JournalService.ExistsForDateAsync(DateTime.Today);
-
-        if (exists)
+        if (await JournalService.ExistsForDateAsync(DateTime.Today))
         {
             await JS.InvokeVoidAsync(
-                "alert",
+                "confirm",
                 "You have already written a journal for today."
             );
 
-            // 🚫 Do NOT allow add or edit
             Nav.NavigateTo("/journals");
-            return; // ⛔ STOP EVERYTHING
+            return;
         }
 
-
-
-        // ✅ GUARANTEED DATE SET
         Entry.EntryDate = DateTime.Today;
         Entry.CreatedAt = DateTime.Now;
     }
+
+    /* ================= MOODS ================= */
+
+    async Task SelectPrimary(string mood)
+    {
+        PrimaryMood = mood;
+        SecondarySelected.Clear();
+        SecondaryMoods = await MoodService.GetSecondaryMoodsAsync(mood);
+    }
+
+    void ToggleSecondary(string mood)
+    {
+        if (SecondarySelected.Contains(mood))
+            SecondarySelected.Remove(mood);
+        else if (SecondarySelected.Count < 2)
+            SecondarySelected.Add(mood);
+    }
+
+    string GetMoodEmoji(string mood) => mood.ToLower() switch
+    {
+        "positive" => "😊",
+        "neutral" => "😐",
+        "negative" => "😔",
+        _ => "🙂"
+    };
+
+    /* ================= TAGS ================= */
+
+    void ToggleTag(string tag)
+    {
+        if (SelectedTags.Contains(tag))
+            SelectedTags.Remove(tag);
+        else
+            SelectedTags.Add(tag);
+    }
+
+    /* ================= QUILL ================= */
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!quillInitialized)
         {
             quillInitialized = true;
-
             await JS.InvokeVoidAsync(
                 "createQuill",
                 "editor",
@@ -102,13 +232,38 @@
         }
     }
 
+    /* ================= SAVE ================= */
+
     async Task Save()
     {
         Entry.Content = await JS.InvokeAsync<string>("getQuillContent");
 
-        await JournalService.SaveAsync(Entry);
+        if (string.IsNullOrWhiteSpace(Entry.Title) ||
+            string.IsNullOrWhiteSpace(Entry.Content) ||
+            string.IsNullOrEmpty(PrimaryMood) ||
+            SecondarySelected.Count == 0)
+        {
+            ShowError = true;
+            ErrorMessage =
+                "Please complete title, content, and select at least one mood.";
+            return;
+        }
 
-        // ✅ CORRECT PAGE
+        var customTags = CustomTagsInput
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .Where(t => !string.IsNullOrWhiteSpace(t));
+
+        var finalTags = SelectedTags
+            .Concat(customTags)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        Entry.PrimaryMood = PrimaryMood;
+        Entry.SecondaryMood = string.Join(", ", SecondarySelected);
+        Entry.Tags = string.Join(", ", finalTags);
+        Entry.UpdatedAt = DateTime.Now;
+
+        await JournalService.SaveAsync(Entry);
         Nav.NavigateTo("/journals");
     }
 }

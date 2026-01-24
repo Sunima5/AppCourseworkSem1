@@ -16,30 +16,47 @@ a {
 
 .content {
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* ============================= */
 /* SIDEBAR / NAV                 */
 /* ============================= */
 
-.sidebar {
+.page {
+    display: flex;
+    min-height: 100vh;
+}
+
+..sidebar {
     width: 230px;
     height: 100vh;
-    padding: 20px;
-    background: linear-gradient(180deg, #0a2a66, #3b0f52);
-    color: white;
+    padding: 12px;
+    background: #ffffff; /* ✅ white */
+    color: #1f2937; /* ✅ dark text */
+    border-right: 1px solid #e5e7eb; /* subtle divider */
+}
+
 }
 
 .sidebar-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 30px;
+    margin-bottom: 18px;
 }
 
 .logo {
     width: 36px;
     height: 36px;
+}
+
+.sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .nav-list {
@@ -59,32 +76,24 @@ a {
         padding: 10px 14px;
         border-radius: 10px;
         font-weight: 500;
-        color: white;
+        color: #1f2937;
     }
 
         .nav-list a:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: #f3f4f6;
         }
 
         .nav-list a.active {
-            background: rgba(255, 255, 255, 0.25);
+            background: #e5e7eb;
+            font-weight: 600;
         }
-
-/* Bottom user */
-.sidebar-content {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
 .sidebar-user {
     display: flex;
     align-items: center;
     gap: 10px;
     padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.2);
-    color: white;
+    border-top: 1px solid #e5e7eb;
 }
 
 .user-avatar {
@@ -94,12 +103,20 @@ a {
 }
 
 /* ============================= */
-/* HOME LAYOUT                   */
+/* HOME DASHBOARD LAYOUT         */
 /* ============================= */
+
+.home-wrapper {
+    width: 100%;
+}
+
+.home-top {
+    margin-bottom: 20px;
+}
 
 .home-grid {
     display: grid;
-    grid-template-columns: 1fr 1.2fr;
+    grid-template-columns: 2fr 1fr;
     gap: 20px;
 }
 
@@ -107,7 +124,7 @@ a {
 .right {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 /* ============================= */
@@ -120,64 +137,6 @@ a {
     padding: 16px;
     border: 1px solid #ddd;
 }
-
-/* ============================= */
-/* SEARCH                        */
-/* ============================= */
-
-.search-box input {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    background: white;
-}
-
-/* ============================= */
-/* JOURNAL LIST                  */
-/* ============================= */
-
-.journal-item {
-    padding: 10px 6px;
-    cursor: pointer;
-    border-bottom: 1px solid #eee;
-}
-
-    .journal-item:last-child {
-        border-bottom: none;
-    }
-
-    .journal-item:hover {
-        background: #f3f3f3;
-    }
-
-/* ============================= */
-/* TODO LIST                     */
-/* ============================= */
-
-.todo-input {
-    display: flex;
-    gap: 8px;
-}
-
-    .todo-input input {
-        flex: 1;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-    }
-
-.todo-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-    .todo-item .done {
-        text-decoration: line-through;
-        color: #777;
-    }
 
 /* ============================= */
 /* STREAKS                       */
@@ -194,6 +153,54 @@ a {
 }
 
 /* ============================= */
+/* JOURNAL LIST                  */
+/* ============================= */
+
+.journals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.journal-box {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.journal-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ============================= */
+/* MOOD BADGES                   */
+/* ============================= */
+
+.mood-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.mood-positive {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.mood-neutral {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.mood-negative {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* ============================= */
 /* TAGS                          */
 /* ============================= */
 
@@ -207,9 +214,77 @@ a {
     cursor: pointer;
 }
 
-    .tag:hover {
-        background: #e0e0e0;
+/* ============================= */
+/* JOURNAL – SEARCH & FILTER     */
+/* ============================= */
+
+.top-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.search-bar {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.filter-btn {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    background: #333;
+    color: white;
+    cursor: pointer;
+}
+
+.filter-panel {
+    margin-bottom: 15px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+    .filter-row input,
+    .filter-row select {
+        padding: 6px;
     }
+
+.clear-btn {
+    background: #eee;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* ============================= */
+/* QUILL EDITOR FIX              */
+/* ============================= */
+
+#editor {
+    height: 180px !important;
+}
+
+.ql-editor {
+    min-height: 120px !important;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.ql-toolbar {
+    border-radius: 8px 8px 0 0;
+}
+
+.ql-container {
+    border-radius: 0 0 8px 8px;
+}
 
 /* ============================= */
 /* BLAZOR ERROR UI               */
@@ -232,130 +307,32 @@ a {
         right: 0.75rem;
         top: 0.5rem;
     }
-
 /* ============================= */
-/* QUILL EDITOR SIZE FIX         */
+/* FORCE SIDEBAR LIGHT THEME     */
 /* ============================= */
 
-/* Outer quill container */
-#editor {
-    height: 180px !important;
+.sidebar {
+    background: #ffffff !important;
+    color: #1f2937 !important;
+    border-right: 1px solid #e5e7eb !important;
 }
 
-/* Actual typing area inside Quill */
-.ql-editor {
-    min-height: 120px !important;
-    max-height: 120px;
-    overflow-y: auto;
+/* Nav links */
+.nav-list a {
+    color: #1f2937 !important;
 }
 
-/* Toolbar spacing fix */
-.ql-toolbar {
-    border-radius: 8px 8px 0 0;
-}
-
-.ql-container {
-    border-radius: 0 0 8px 8px;
-}
-
-/* Journal editor + mood grouping */
-.journal-entry-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-}
-
-/* Make editor not overpowering */
-.journal-editor {
-    width: 100%;
-    max-width: 900px;
-    height: 180px;
-    border-radius: 12px;
-}
-
-/* Mood heading */
-.mood-heading {
-    margin-top: 10px;
-    margin-bottom: 4px;
-    text-align: center;
-    font-weight: 600;
-}
-
-/* Center the wheel PROPERLY */
-.mood-wheel {
-    width: 320px;
-    height: 320px;
-    border-radius: 50%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
-
-
-
-.mood-segment {
-    font-size: 15px;
-    letter-spacing: 0.3px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
-}
-
-
-
-    .mood-segment:hover {
-        opacity: 0.9;
-        transform: scale(1.05);
-        z-index: 2;
+    .nav-list a:hover {
+        background: #f3f4f6 !important;
     }
 
-.mood-active {
-    outline: 4px solid white;
-    box-shadow: 0 0 0 4px rgba(0,0,0,0.2);
-}
-
-
-.mood-happy {
-    background: #f4c430;
-}
-
-.mood-sad {
-    background: #4a6fa5;
-}
-
-.mood-angry {
-    background: #d64545;
-}
-
-.mood-fear {
-    background: #6a4c93;
-}
-
-.mood-surprise {
-    background: #f08a24;
-}
-
-.mood-peaceful {
-    background: #3aa17e;
-}
-
-.mood-svg {
-    display: block;
-    margin: 20px auto;
-}
-
-    .mood-svg path {
-        transition: transform 0.2s ease, opacity 0.2s ease;
+    .nav-list a.active {
+        background: #e5e7eb !important;
+        color: #111827 !important;
     }
 
-    .mood-svg g:hover path {
-        opacity: 0.9;
-        transform: scale(1.02);
-        transform-origin: center;
+    /* Icons inside nav (if any SVG / emoji) */
+    .nav-list a span,
+    .nav-list a i {
+        color: #1f2937 !important;
     }
-
-.mood-selected {
-    stroke: white;
-    stroke-width: 4;
-}
