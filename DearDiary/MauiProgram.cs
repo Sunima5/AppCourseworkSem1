@@ -22,6 +22,8 @@ namespace DearDiary
             builder.Services.AddSingleton<JournalService>();
             builder.Services.AddSingleton<TagService>();
             builder.Services.AddSingleton<MoodService>();
+            builder.Services.AddSingleton<AppState>();
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

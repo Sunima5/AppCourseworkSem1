@@ -1,11 +1,10 @@
-﻿/* ============================= */
+﻿﻿ /* ============================= */
 /* GLOBAL                        */
 /* ============================= */
-
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     margin: 0;
-    background: #f5f5f5;
+    background: linear-gradient( 180deg, #cfeeff 0%, #eaf7ff 40%, #ffffff 100% );
     color: #222;
 }
 
@@ -15,10 +14,13 @@ a {
 }
 
 .content {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 24px;
+    flex: 1;
+    max-width: 1200px; /* 👈 KEY */
+    margin: 0 auto; /* 👈 CENTER CONTENT */
 }
+
+
 
 /* ============================= */
 /* SIDEBAR / NAV                 */
@@ -29,15 +31,12 @@ a {
     min-height: 100vh;
 }
 
-..sidebar {
-    width: 230px;
+.sidebar {
+    width: 150px;
     height: 100vh;
-    padding: 12px;
     background: #ffffff; /* ✅ white */
     color: #1f2937; /* ✅ dark text */
     border-right: 1px solid #e5e7eb; /* subtle divider */
-}
-
 }
 
 .sidebar-header {
@@ -108,7 +107,10 @@ a {
 
 .home-wrapper {
     width: 100%;
+    max-width: 1200px; /* ✅ dashboard looks nice */
+    margin: 0 auto;
 }
+
 
 .home-top {
     margin-bottom: 20px;
@@ -116,9 +118,10 @@ a {
 
 .home-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    grid-template-columns: 3fr 1.4fr; /* 👈 more breathing room */
+    gap: 24px;
 }
+
 
 .left,
 .right {
@@ -133,10 +136,16 @@ a {
 
 .card {
     background: white;
-    border-radius: 14px;
-    padding: 16px;
-    border: 1px solid #ddd;
+    border-radius: 16px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04); /* 👈 soft shadow */
 }
+
+    .card:hover {
+        transform: translateY(-2px);
+        transition: 0.2s ease;
+    }
 
 /* ============================= */
 /* STREAKS                       */
@@ -150,7 +159,11 @@ a {
 
 .streak {
     text-align: center;
+    padding: 12px;
+    border-radius: 12px;
+    background: #f9fafb;
 }
+
 
 /* ============================= */
 /* JOURNAL LIST                  */
@@ -336,6 +349,7 @@ a {
     .nav-list a i {
         color: #1f2937 !important;
     }
+
 .insights-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -348,6 +362,7 @@ a {
     padding: 6px 0;
     font-size: 15px;
 }
+
 .chart-box {
     width: 220px; /* 👈 change this if needed */
     height: 220px;
@@ -358,8 +373,254 @@ a {
         width: 100% !important;
         height: 100% !important;
     }
+
 .mood-row {
     display: flex;
     justify-content: space-between;
     margin-top: 6px;
+}
+/* ============================= */
+/* LOCK SCREEN – GRADIENT        */
+/* ============================= */
+
+.lock-screen {
+    min-height: 100vh;
+    width: 100vw;
+    /* 🌤️ sky blue → white gradient */
+    background: linear-gradient( 180deg, #cfe9ff 0%, #eaf5ff 40%, #ffffff 100% );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lock-card {
+    background: #ffffff;
+    padding: 36px 32px;
+    width: 360px;
+    border-radius: 18px;
+    /* soft floating effect */
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12);
+    text-align: center;
+}
+
+/* title */
+.lock-title {
+    font-size: 22px;
+    margin-bottom: 18px;
+    color: #111827;
+}
+
+/* input */
+.lock-input {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    margin-bottom: 16px;
+    letter-spacing: 6px;
+}
+
+    .lock-input:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+/* button */
+.lock-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient( 135deg, #111827, #1f2937 );
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+    .lock-btn:hover {
+        opacity: 0.95;
+    }
+
+/* error */
+.lock-error {
+    color: #dc2626;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+/* ============================= */
+/* 🌙 DARK MODE                  */
+/* ============================= */
+
+body.dark {
+    background: linear-gradient( 180deg, #0f172a 0%, #020617 100% );
+    color: #e5e7eb;
+}
+
+    /* cards */
+    body.dark .card {
+        background: #020617;
+        border-color: #1e293b;
+    }
+
+    /* content */
+    body.dark .content {
+        background: transparent;
+    }
+
+    /* sidebar */
+    body.dark .sidebar {
+        background: #020617 !important;
+        color: #e5e7eb !important;
+        border-right: 1px solid #1e293b;
+    }
+
+    /* nav links */
+    body.dark .nav-list a {
+        color: #e5e7eb !important;
+    }
+
+        body.dark .nav-list a:hover {
+            background: #1e293b;
+        }
+
+        body.dark .nav-list a.active {
+            background: #334155;
+        }
+
+    /* inputs */
+    body.dark input,
+    body.dark textarea {
+        background: #020617;
+        color: #e5e7eb;
+        border: 1px solid #334155;
+    }
+.dark-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    border: none;
+    background: #111827;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 9999;
+}
+/* ============================= */
+/* THEME TOGGLE SWITCH           */
+/* ============================= */
+
+.theme-toggle {
+    position: fixed;
+    top: 12px; /* closer to top */
+    right: 16px; /* closer to right edge */
+    width: 64px;
+    height: 34px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    z-index: 10000; /* 🔥 above cards, headers, everything */
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.theme-toggle .thumb {
+    width: 26px;
+    height: 26px;
+    background: #ffffff;
+    border-radius: 50%;
+    position: absolute;
+    left: 4px;
+    transition: transform 0.35s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.theme-toggle .icon {
+    position: absolute;
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+.theme-toggle .sun {
+    left: 10px;
+}
+
+.theme-toggle .moon {
+    right: 10px;
+}
+
+/* 🌙 DARK MODE STATE */
+body.dark {
+    background: #0f172a;
+}
+
+body.dark .theme-toggle {
+    background: #111827;
+}
+
+body.dark .theme-toggle .thumb {
+    transform: translateX(30px);
+}
+
+body.dark .sun {
+    opacity: 0.3;
+}
+
+body.dark .moon {
+    opacity: 1;
+}
+/* ============================= */
+/* HOME HERO (GREETING + SLIDER) */
+/* ============================= */
+
+.home-hero {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* greeting box */
+.hero-greeting {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* slider */
+.hero-slider {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+}
+
+.hero-slider img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+    animation: fade 0.8s ease-in-out;
+}
+
+/* fade animation */
+@keyframes fade {
+    from { opacity: 0.4; }
+    to { opacity: 1; }
+}
+
+/* 📱 Responsive */
+@media (max-width: 900px) {
+    .home-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-slider img {
+        height: 160px;
+    }
 }

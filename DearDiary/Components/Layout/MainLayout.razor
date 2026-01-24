@@ -1,17 +1,27 @@
 ﻿@inherits LayoutComponentBase
+@inject AppState AppState
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<div class="page d-flex">
+<button class="theme-toggle" @onclick="ToggleTheme">
+    <span class="icon sun">☀️</span>
+    <span class="icon moon">🌙</span>
+    <span class="thumb"></span>
+</button>
 
-    <!-- SIDEBAR -->
+@code {
+    async Task ToggleTheme()
+    {
+        await JS.InvokeVoidAsync("toggleDarkMode");
+    }
+}
+
+<div class="page">
     <aside class="sidebar">
         <NavMenu />
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-fill">
-        <article class="content px-4">
-            @Body
-        </article>
+    <main class="content">
+        @Body
     </main>
-
 </div>

@@ -1,4 +1,4 @@
-window.createQuill = (id, content) => {
+﻿window.createQuill = (id, content) => {
     const el = document.getElementById(id);
     if (!el) return;
 

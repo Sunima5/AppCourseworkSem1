@@ -2,6 +2,12 @@
 @inject JournalService JournalService
 @inject TagService TagService
 @inject NavigationManager NavigationManager
+@inject AppState AppState
+
+@if (!AppState.IsUnlocked)
+{
+    NavigationManager.NavigateTo("/lock", true);
+}
 
 <div class="home-wrapper">
 

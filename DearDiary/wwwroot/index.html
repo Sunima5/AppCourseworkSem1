@@ -16,26 +16,32 @@
 <body>
 
     <div class="status-bar-safe-area"></div>
-
     <div id="app">Loading...</div>
 
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+    <div id="blazor-error-ui" style="display:block;background:#fee2e2;color:#7f1d1d;padding:12px;">
+        <strong>Blazor Error:</strong>
+        <span id="blazor-error-message"></span>
     </div>
 
-    <!-- Blazor -->
-    <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <!-- 🌙 Dark mode helper -->
+    <script>
+        window.toggleDarkMode = () => {
+            document.body.classList.toggle("dark");
+        };
+    </script>
 
+    <!-- ✅ External libraries FIRST -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script src="editor.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- ✅ Your JS files (correct paths) -->
+    <script src="js/editor.js"></script>
+
     <script src="js/insights.js"></script>
 
+    <!-- ✅ Blazor LAST -->
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
 
 </body>
+
 </html>
-
-
-

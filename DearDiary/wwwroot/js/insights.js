@@ -104,3 +104,7 @@ window.renderTagCategoryChart = (labels, data) => {
         }
     });
 };
+window.addEventListener("load", () => {
+    const err = document.getElementById("blazor-error-ui");
+    if (err) err.style.display = "none";
+});

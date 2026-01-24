@@ -5,7 +5,7 @@
 
 <h3>📖 All Journals</h3>
 
-<!-- 🔝 TOP SEARCH + FILTER BAR -->
+<!-- 🔝 TOP SEARCH + FILTER + DOWNLOAD BAR -->
 <div class="top-bar">
     <input type="text"
            placeholder="🔍 Search journals..."
@@ -37,14 +37,25 @@ else
         {
             <div class="journal-box">
                 <h5>@j.Title</h5>
-                <p class="muted">@j.EntryDate.ToString("dd MMM yyyy")</p>
 
-                <div class="preview">
-                    @((MarkupString)(
-                                j.Content.Length > 120
-                                ? j.Content[..120] + "..."
-                                : j.Content
-                                ))
+                <!-- 📅 DATE + 😊 PRIMARY MOOD -->
+                <p class="muted journal-meta">
+                    <span>@j.EntryDate.ToString("dd MMM yyyy")</span>
+
+                    @if (!string.IsNullOrWhiteSpace(j.PrimaryMood))
+                    {
+                        <span class="mood-badge @GetMoodClass(j.PrimaryMood)">
+                            @GetMoodEmoji(j.PrimaryMood) @j.PrimaryMood
+                        </span>
+                    }
+            </p>
+
+            <div class="preview">
+                @((MarkupString)(
+                            j.Content.Length > 120
+                            ? j.Content[..120] + "..."
+                            : j.Content
+                            ))
         </div>
 
                 <div class="actions">
@@ -71,7 +82,7 @@ else
     DateTime? selectedDate = null;
     bool showFilter = false;
 
-    // 🔍 SEARCH + 📅 DATE FILTER LOGIC
+    // 🔍 SEARCH + 📅 DATE FILTER
     List<Journal> FilteredJournals =>
         Journals.Where(j =>
             (string.IsNullOrWhiteSpace(searchText) ||
@@ -91,7 +102,6 @@ else
         showFilter = !showFilter;
     }
 
- 
     void Edit(DateTime date)
         => Nav.NavigateTo($"/add/{date:yyyy-MM-dd}");
 
@@ -100,4 +110,21 @@ else
         await JournalService.DeleteAsync(id);
         Journals = await JournalService.GetAllAsync();
     }
+
+    // 😊 MOOD HELPERS
+    string GetMoodEmoji(string mood) => mood switch
+    {
+        "Positive" => "😊",
+        "Neutral" => "😐",
+        "Negative" => "😔",
+        _ => "🙂"
+    };
+
+    string GetMoodClass(string mood) => mood switch
+    {
+        "Positive" => "mood-positive",
+        "Neutral" => "mood-neutral",
+        "Negative" => "mood-negative",
+        _ => ""
+    };
 }

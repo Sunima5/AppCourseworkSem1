@@ -1,0 +1,21 @@
+﻿@inject AppState AppState
+@inject NavigationManager Nav
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+
+        @if (!AppState.IsUnlocked && !Nav.Uri.EndsWith("/lock"))
+        {
+            Nav.NavigateTo("/lock", replace: true);
+        }
+
+        <RouteView RouteData="@routeData"
+                   DefaultLayout="@(Nav.Uri.EndsWith("/lock")
+                                          ? typeof(DearDiary.Components.Layout.EmptyLayout)
+                                          : typeof(DearDiary.Components.Layout.MainLayout))" />
+    </Found>
+
+    <NotFound>
+        <p>Page not found</p>
+    </NotFound>
+</Router>

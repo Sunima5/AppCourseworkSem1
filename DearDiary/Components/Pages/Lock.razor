@@ -1,0 +1,45 @@
+﻿@page "/lock"
+@layout DearDiary.Components.Layout.EmptyLayout
+
+@inject AppState AppState
+@inject NavigationManager Nav
+
+<div class="lock-card">
+    <h3 class="lock-title">🔒 Enter PIN</h3>
+
+    <input type="password"
+           maxlength="4"
+           class="lock-input"
+           placeholder="••••"
+           @bind="Pin" />
+
+    @if (ShowError)
+    {
+        <p class="lock-error">Wrong PIN</p>
+    }
+
+    <button class="lock-btn" @onclick="Unlock">
+        Unlock
+    </button>
+</div>
+
+@code {
+    string Pin = "";
+    bool ShowError = false;
+
+    const string CorrectPin = "1234";
+
+    void Unlock()
+    {
+        if (Pin == CorrectPin)
+        {
+            AppState.IsUnlocked = true;
+            Nav.NavigateTo("/", true);
+        }
+        else
+        {
+            ShowError = true;
+            Pin = "";
+        }
+    }
+}
