@@ -10,6 +10,7 @@
     gap: 5px;
     text-align: center;
 }
+
 .calendar-day.today {
     background: #111827;
     color: white;
@@ -29,6 +30,7 @@
     .calendar-day.today {
         border: 2px solid black;
     }
+
 .dot {
     width: 6px;
     height: 6px;
@@ -36,4 +38,3 @@
     border-radius: 50%;
     margin: 2px auto 0;
 }
-
