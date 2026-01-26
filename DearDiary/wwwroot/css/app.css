@@ -364,7 +364,7 @@ a {
 }
 
 .chart-box {
-    width: 220px; /* 👈 change this if needed */
+    width: 220px; 
     height: 220px;
     margin: 10px auto;
 }
@@ -623,4 +623,20 @@ body.dark .moon {
     .hero-slider img {
         height: 160px;
     }
+}
+.no-journals {
+    text-align: center;
+    margin: 40px 0;
+    color: #777;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.page-info {
+    font-weight: 500;
 }

@@ -41,7 +41,7 @@
                     <p class="muted">
                         @SelectedJournal.EntryDate.ToString("dd MMM yyyy")
                     </p>
-                    <p>@SelectedJournal.Content</p>
+                    <p>@((MarkupString)SelectedJournal.Content)</p>
                 </div>
             }
 

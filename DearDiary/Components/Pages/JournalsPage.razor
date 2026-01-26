@@ -5,7 +5,7 @@
 
 <h3>📖 All Journals</h3>
 
-<!-- 🔝 TOP SEARCH + FILTER + DOWNLOAD BAR -->
+<!-- 🔝 TOP SEARCH + FILTER BAR -->
 <div class="top-bar">
     <input type="text"
            placeholder="🔍 Search journals..."
@@ -26,19 +26,14 @@
     </div>
 }
 
-@if (!FilteredJournals.Any())
-{
-    <p class="text-muted">No journals found.</p>
-}
-else
+@if (PagedJournals.Any())
 {
     <div class="journals-list">
-        @foreach (var j in FilteredJournals)
+        @foreach (var j in PagedJournals)
         {
             <div class="journal-box">
                 <h5>@j.Title</h5>
 
-                <!-- 📅 DATE + 😊 PRIMARY MOOD -->
                 <p class="muted journal-meta">
                     <span>@j.EntryDate.ToString("dd MMM yyyy")</span>
 
@@ -73,33 +68,102 @@ else
         }
     </div>
 }
+else
+{
+    <div class="no-journals">
+        📭 No journals here. <br />
+    </div>
+}
 
+<!-- 🔢 PAGINATION -->
+<div class="pagination-container">
+    <button class="btn btn-outline-secondary"
+            disabled="@IsFirstPage"
+            @onclick="PreviousPage">
+        ⬅ Previous
+    </button>
+
+    <span class="page-info">
+        Page @CurrentPage of @TotalPages
+    </span>
+
+    <button class="btn btn-outline-secondary"
+            disabled="@IsLastPage"
+            @onclick="NextPage">
+        Next ➡
+    </button>
+</div>
 @code {
-
     List<Journal> Journals = new();
+    List<Journal> PagedJournals = new();
 
     string searchText = "";
     DateTime? selectedDate = null;
     bool showFilter = false;
 
-    // 🔍 SEARCH + 📅 DATE FILTER
+    int PageSize = 3;
+    int CurrentPage = 1;
+
+    // 🔍 SEARCH + 📅 FILTER (BASE LIST)
     List<Journal> FilteredJournals =>
-        Journals.Where(j =>
-            (string.IsNullOrWhiteSpace(searchText) ||
-             j.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-            &&
-            (!selectedDate.HasValue ||
-             j.EntryDate.Date == selectedDate.Value.Date)
-        ).ToList();
+        Journals
+            .Where(j =>
+                (string.IsNullOrWhiteSpace(searchText) ||
+                 j.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                &&
+                (!selectedDate.HasValue ||
+                 j.EntryDate.Date == selectedDate.Value.Date)
+            )
+            .OrderByDescending(j => j.EntryDate)
+            .ToList();
+
+    int TotalPages =>
+        Math.Max(1, (int)Math.Ceiling((double)FilteredJournals.Count / PageSize));
+
+    bool IsFirstPage => CurrentPage == 1;
+    bool IsLastPage => CurrentPage == TotalPages;
 
     protected override async Task OnInitializedAsync()
     {
         Journals = await JournalService.GetAllAsync();
+        UpdatePage();
+    }
+
+    void UpdatePage()
+    {
+        // reset page if filter/search changes result size
+        if (CurrentPage > TotalPages)
+            CurrentPage = TotalPages;
+
+        PagedJournals = FilteredJournals
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+    }
+
+    void NextPage()
+    {
+        if (!IsLastPage)
+        {
+            CurrentPage++;
+            UpdatePage();
+        }
+    }
+
+    void PreviousPage()
+    {
+        if (!IsFirstPage)
+        {
+            CurrentPage--;
+            UpdatePage();
+        }
     }
 
     void ToggleFilter()
     {
         showFilter = !showFilter;
+        CurrentPage = 1;
+        UpdatePage();
     }
 
     void Edit(DateTime date)
@@ -109,6 +173,7 @@ else
     {
         await JournalService.DeleteAsync(id);
         Journals = await JournalService.GetAllAsync();
+        UpdatePage();
     }
 
     // 😊 MOOD HELPERS
