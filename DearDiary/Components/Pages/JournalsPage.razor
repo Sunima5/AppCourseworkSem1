@@ -5,26 +5,21 @@
 
 <h3>📖 All Journals</h3>
 
-<!-- 🔝 TOP SEARCH + FILTER BAR -->
+<!-- 🔍 SEARCH BAR -->
 <div class="top-bar">
     <input type="text"
            placeholder="🔍 Search journals..."
            @bind="searchText"
-           @bind:event="oninput"
            class="search-bar" />
 
-    <button class="filter-btn" @onclick="ToggleFilter">
-        Filter
+    <input type="date"
+           @bind="selectedDate"
+           class="date-input" />
+
+    <button class="search-btn" @onclick="ApplySearch">
+        🔍 Search
     </button>
 </div>
-
-<!-- 📅 FILTER PANEL -->
-@if (showFilter)
-{
-    <div class="filter-panel">
-        <input type="date" @bind="selectedDate" />
-    </div>
-}
 
 @if (PagedJournals.Any())
 {
@@ -71,7 +66,7 @@
 else
 {
     <div class="no-journals">
-        📭 No journals here. <br />
+        📭 No journals found.
     </div>
 }
 
@@ -93,26 +88,31 @@ else
         Next ➡
     </button>
 </div>
+
 @code {
     List<Journal> Journals = new();
     List<Journal> PagedJournals = new();
 
+    // Input fields
     string searchText = "";
     DateTime? selectedDate = null;
-    bool showFilter = false;
+
+    // Applied filters (used for actual search)
+    string appliedSearchText = "";
+    DateTime? appliedDate = null;
 
     int PageSize = 3;
     int CurrentPage = 1;
 
-    // 🔍 SEARCH + 📅 FILTER (BASE LIST)
     List<Journal> FilteredJournals =>
         Journals
             .Where(j =>
-                (string.IsNullOrWhiteSpace(searchText) ||
-                 j.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                (string.IsNullOrWhiteSpace(appliedSearchText) ||
+                 j.Title.Contains(appliedSearchText, StringComparison.OrdinalIgnoreCase) ||
+                 j.Content.Contains(appliedSearchText, StringComparison.OrdinalIgnoreCase))
                 &&
-                (!selectedDate.HasValue ||
-                 j.EntryDate.Date == selectedDate.Value.Date)
+                (!appliedDate.HasValue ||
+                 j.EntryDate.Date == appliedDate.Value.Date)
             )
             .OrderByDescending(j => j.EntryDate)
             .ToList();
@@ -129,9 +129,17 @@ else
         UpdatePage();
     }
 
+    void ApplySearch()
+    {
+        appliedSearchText = searchText;
+        appliedDate = selectedDate;
+
+        CurrentPage = 1;
+        UpdatePage();
+    }
+
     void UpdatePage()
     {
-        // reset page if filter/search changes result size
         if (CurrentPage > TotalPages)
             CurrentPage = TotalPages;
 
@@ -157,13 +165,6 @@ else
             CurrentPage--;
             UpdatePage();
         }
-    }
-
-    void ToggleFilter()
-    {
-        showFilter = !showFilter;
-        CurrentPage = 1;
-        UpdatePage();
     }
 
     void Edit(DateTime date)
