@@ -26,7 +26,8 @@ public class AppDatabase
                 _database.CreateTableAsync<Tag>().Wait();
                 _database.CreateTableAsync<JournalMood>().Wait();
                 _database.CreateTableAsync<JournalTag>().Wait();
-            
+                _database.CreateTableAsync<User>().Wait();
+
             }
 
             return _database;
