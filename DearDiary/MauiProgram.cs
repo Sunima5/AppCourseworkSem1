@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using DearDiary.Services;
+using QuestPDF.Infrastructure;
 
 namespace DearDiary
 {
@@ -8,6 +9,8 @@ namespace DearDiary
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
+            QuestPDF.Settings.License = LicenseType.Community;
+
 
             builder
                 .UseMauiApp<App>()
@@ -23,6 +26,7 @@ namespace DearDiary
             builder.Services.AddSingleton<TagService>();
             builder.Services.AddSingleton<MoodService>();
             builder.Services.AddSingleton<AppState>();
+            builder.Services.AddSingleton<PdfExportService>();
 
 
 #if DEBUG

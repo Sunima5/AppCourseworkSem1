@@ -2,6 +2,7 @@
 
 @inject JournalService JournalService
 @inject NavigationManager Nav
+@inject PdfExportService PdfExportService
 
 <h3>📖 All Journals</h3>
 
@@ -16,8 +17,20 @@
            @bind="selectedDate"
            class="date-input" />
 
+    <!-- 😊 MOOD FILTER -->
+    <select class="mood-select" @bind="selectedMood">
+        <option value="">😊 All Moods</option>
+        <option value="Positive">😊 Positive</option>
+        <option value="Neutral">😐 Neutral</option>
+        <option value="Negative">😔 Negative</option>
+    </select>
+
     <button class="search-btn" @onclick="ApplySearch">
         🔍 Search
+    </button>
+
+    <button class="search-btn" @onclick="ExportPdf">
+        📄 Export PDF
     </button>
 </div>
 
@@ -93,17 +106,20 @@ else
     List<Journal> Journals = new();
     List<Journal> PagedJournals = new();
 
-    // Input fields
+    // 🔍 Input values
     string searchText = "";
     DateTime? selectedDate = null;
+    string selectedMood = "";
 
-    // Applied filters (used for actual search)
+    // ✅ Applied filters
     string appliedSearchText = "";
     DateTime? appliedDate = null;
+    string appliedMood = "";
 
     int PageSize = 3;
     int CurrentPage = 1;
 
+    // 🔎 FILTER LOGIC (TEXT + DATE + MOOD)
     List<Journal> FilteredJournals =>
         Journals
             .Where(j =>
@@ -113,6 +129,9 @@ else
                 &&
                 (!appliedDate.HasValue ||
                  j.EntryDate.Date == appliedDate.Value.Date)
+                &&
+                (string.IsNullOrWhiteSpace(appliedMood) ||
+                 j.PrimaryMood == appliedMood)
             )
             .OrderByDescending(j => j.EntryDate)
             .ToList();
@@ -133,6 +152,7 @@ else
     {
         appliedSearchText = searchText;
         appliedDate = selectedDate;
+        appliedMood = selectedMood;
 
         CurrentPage = 1;
         UpdatePage();
@@ -147,6 +167,49 @@ else
             .Skip((CurrentPage - 1) * PageSize)
             .Take(PageSize)
             .ToList();
+    }
+
+    // 📄 PDF EXPORT (exports filtered data)
+    async Task ExportPdf()
+    {
+        try
+        {
+            var journalsToExport = FilteredJournals;
+
+            if (!journalsToExport.Any())
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "No Data",
+                    "There are no journals to export.",
+                    "OK"
+                );
+                return;
+            }
+
+            var pdfBytes = PdfExportService.GenerateJournalPdf(journalsToExport);
+
+            var fileName = $"DearDiary_Journals_{DateTime.Now:yyyy-MM-dd}.pdf";
+
+            var path = Path.Combine(
+                FileSystem.AppDataDirectory,
+                fileName
+            );
+
+            File.WriteAllBytes(path, pdfBytes);
+
+            await Launcher.OpenAsync(new OpenFileRequest
+            {
+                File = new ReadOnlyFile(path)
+            });
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                "PDF Error ❌",
+                ex.Message,
+                "OK"
+            );
+        }
     }
 
     void NextPage()
